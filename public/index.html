@@ -16,8 +16,13 @@
     <!-- <link rel="shortcut icon" href="//yy-s.zuoyebang.cc/static/common/css/resource/favicon.ico" /> -->
     <title>香君大学</title>
     <script src="/fastclick.js"></script>
-    <link rel="stylesheet" href="//at.alicdn.com/t/font_1558884_mg9f833bv2.css">
-    </style>
+    <link
+      rel="stylesheet"
+      href="//at.alicdn.com/t/font_1558884_mg9f833bv2.css"
+    />
+    <link rel="stylesheet" href="/css/reveal.css" />
+    <link rel="stylesheet" href="/css/theme/white.css" />
+    <script src="/reveal.js"></script>
     <script>
       if ("addEventListener" in document) {
         document.addEventListener(
@@ -33,21 +38,6 @@
           '<script src="./es6-promise.min.js"' + ">" + "<" + "/" + "script>"
         );
       }
-    </script>
-    <script>
-      (function(doc, win) {
-        var docEl = doc.documentElement,
-          resizeEvt =
-            "orientationchange" in window ? "orientationchange" : "resize",
-          recalc = function() {
-            var clientWidth = docEl.clientWidth;
-            if (!clientWidth) return;
-            docEl.style.fontSize = 200 * (clientWidth / 750) + "px";
-          };
-        if (!doc.addEventListener) return;
-        win.addEventListener(resizeEvt, recalc, false);
-        doc.addEventListener("DOMContentLoaded", recalc, false);
-      })(document, window);
     </script>
   </head>
   <body>

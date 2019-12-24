@@ -3,169 +3,143 @@
  * @Author: Ask
  * @LastEditors  : Ask
  * @Date: 2019-10-27 20:46:59
- * @LastEditTime : 2019-12-20 08:44:51
+ * @LastEditTime : 2019-12-24 10:28:19
  */
 // @flow
 import React, { Component } from "react";
-import TagList from "@/components/TagList.js";
-import { TextareaItem, Button, Toast } from "antd-mobile";
-import { trim } from "@/utils/utils.js";
-// import profession from "@/constant/profession.js";
-import { post } from "@/utils/request.js";
-import { QUESTION, SUBJECT, USER } from "@/service/api.js";
-import { QESTION_TYPE } from "@/utils/constans.js";
+import { LongLink } from "@/utils/longLink.js";
+// import { Button } from "antd-mobile";
 
+const Reveal = window.Reveal;
 class PrePage extends Component {
   constructor(props) {
     super(props);
+    const { role } = this.props.match.params;
     this.state = {
-      selectedTag: [],
-      tagList: [],
-      value: ""
+      currentPage: 1,
+      role
     };
-    this.getTagList();
-    this.handleChange = this.handleChange.bind(this);
-    this.selectedTag = this.selectedTag.bind(this);
+    this.prevPage = this.prevPage.bind(this);
+    this.nextPage = this.nextPage.bind(this);
+    this.longLink = LongLink.getInstance({
+      sigNo: 50002, // 配置信令号
+      onMessage: data => {
+        console.log("onMessage", data);
+        this.dealData(data);
+      }
+    });
   }
 
   componentDidMount() {
-    this.autoFocusInst.focus();
-  }
-  /**
-   * @Description: 发布问题
-   */
-  saveData() {
-    Promise.all([this.saveSubject(), this.addShare()]).then(res => {
-      console.log(res);
-      this.props.history.push("/question/questionlist");
+    const { role } = this.state;
+    Reveal.initialize({
+      controls: parseInt(role, 10) === 1 ? true : false,
+      controlsLayout: "bottom-center",
+      slideNumber: true
+    });
+    // Reveal.slide(4);
+    Reveal.addEventListener("slidechanged", event => {
+      // event.previousSlide, event.currentSlide, event.indexh, event.indexv
+      console.log(event);
+      this.gotoPage(event.indexh);
     });
   }
 
-  /**
-   * @Description: 保存类目
-   */
-
-  saveSubject() {
-    return new Promise((resolve, reject) => {
-      const { selectedTag } = this.state;
-      const userInfo = JSON.parse(sessionStorage.getItem("userInfo"));
-      post(USER.USER_BIND_SUBJECT, {
-        subject_ids: selectedTag.join(","),
-        user_id: userInfo.id
-      }).then(e => {
-        if (e.status === 200) {
-          resolve();
-          Toast.success("发布成功~");
-        }
-      });
-    });
+  dealData(data) {
+    switch (data.type) {
+      case "getImage":
+      case "nextPage":
+      case "prevPage":
+        this.setState({ currentPage: data.currentPage }, () => {
+          Reveal.slide(data.currentPage - 1);
+        });
+        break;
+      case "gotoPage":
+        Reveal.slide(data.currentPage - 1);
+        break;
+      case "onOpen":
+        this.getCurrentPage();
+        break;
+      default:
+        break;
+    }
   }
   /**
-   * @Description: 分享
+   * @Description: 获取当前页码
    */
-
-  addShare() {
-    return new Promise((resolve, reject) => {
-      const { value, selectedTag } = this.state;
-      const userInfo = JSON.parse(sessionStorage.getItem("userInfo"));
-      post(QUESTION.ADD_QUESTION, {
-        content: value,
-        type: QESTION_TYPE.SHARE,
-        user_id: userInfo.id,
-        subject_id: selectedTag[0]
-      }).then(e => {
-        if (e.status === 200) {
-          resolve();
-          Toast.success("发布成功~");
-        }
-      });
-    });
-  }
-  /**
-   * @Description: 获取标签list
-   */
-  getTagList() {
-    post(SUBJECT.GET_ALL_SUBJECT, {
-      currentPage: 1,
-      pageSize: 30
-    }).then(res => {
-      let tagList = res.data.rows.map(item => ({
-        tagId: item.id,
-        tagName: item.title
-      }));
-      this.setState({
-        tagList
-      });
+  getCurrentPage() {
+    this.longLink.pushLongMsg({
+      type: "getImage"
     });
   }
 
-  /**
-   * @Description: 发布问题/分享
-   */
-  publish(e) {
-    const { selectedTag, value } = this.state;
-    if (!selectedTag.length) return Toast.info("请选择标签", 2, null, false);
-    if (trim(value) === "") return Toast.info("请输入内容", 2, null, false);
-    console.log("publish");
-    this.saveData();
+  gotoPage(pageIndex) {
+    this.setState(
+      {
+        currentPage: pageIndex + 1
+      },
+      () => {
+        this.longLink.pushLongMsg({
+          type: "gotoPage",
+          currentPage: pageIndex + 1
+        });
+      }
+    );
   }
 
-  /**
-   * @Description: 设置选择标签
-   */
-  selectedTag(selectedTag) {
-    this.setState({
-      selectedTag
-    });
+  prevPage() {
+    const { currentPage } = this.state;
+    this.setState(
+      {
+        currentPage: currentPage - 1
+      },
+      () => {
+        this.longLink.pushLongMsg({
+          type: "prevPage",
+          currentPage: currentPage - 1
+        });
+      }
+    );
   }
-  /**
-   * @Description: 设置输入内容
-   */
-  handleChange(value) {
-    this.setState({
-      value
-    });
+
+  nextPage() {
+    const { currentPage } = this.state;
+    this.setState(
+      {
+        currentPage: currentPage + 1
+      },
+      () => {
+        this.longLink.pushLongMsg({
+          type: "nextPage",
+          currentPage: currentPage + 1
+        });
+      }
+    );
   }
 
   render() {
+    const { role } = this.state;
+    console.log(role);
     return (
       <div className="prev">
-        <h4 className="prev-title">
-          请选择自己的专业或喜好的专业,并提出问题,可以多选.
-        </h4>
-        <TagList selectedTag={this.selectedTag} tagList={this.state.tagList} />
-        <TextareaItem
-          ref={ref => (this.autoFocusInst = ref)}
-          className="prev-text"
-          placeholder="请输入您的问题或者想法"
-          rows={7}
-          count={200}
-          value={this.state.value}
-          onChange={this.handleChange}
-        />
-        <div className="prev-btnGroups">
-          <Button
-            onClick={() => {
-              this.props.history.push({
-                pathname: "/question/questionlist"
-              });
-            }}
-            inline
-            type="primary"
-            icon="check-circle-o"
-            size="small"
-          >
-            主页
-          </Button>
-          <Button
-            onClick={this.publish.bind(this)}
-            icon="check-circle-o"
-            type="primary"
-            inline
-            size="small"
-          >
-            发布
-          </Button>
+        <div className="reveal">
+          <div className="slides">
+            <section>Slide 1</section>
+            <section>Slide 2</section>
+            <section>Slide 3</section>
+            <section>Slide 4</section>
+            <section>Slide 5</section>
+            <section>Slide 6</section>
+            <section>Slide 7</section>
+            <section>Slide 8</section>
+            <section>Slide 9</section>
+            <section>Slide 10</section>
+            <section>Slide 11</section>
+            <section>Slide 12</section>
+            <section>Slide 13</section>
+            <section>Slide 14</section>
+            <section>Slide 15</section>
+          </div>
         </div>
       </div>
     );

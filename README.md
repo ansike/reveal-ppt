@@ -1,16 +1,9 @@
-<!--
- * @Description: This is a description
- * @Author: Ask
- * @LastEditors: Ask
- * @Date: 2019-10-27 20:46:59
- * @LastEditTime: 2019-11-11 21:21:16
- -->
-# React Wap Aim
+# ws-ppt
 
 ## Usage
-> start: &nbsp;&nbsp; <code>npm start</code>
+> start: &nbsp;&nbsp; <code>yarn dev</code>
 
-> build: &nbsp;&nbsp; <code>npm run build</code>
+> build: &nbsp;&nbsp; <code>yarn build</code>
 
 
 ## Directory
@@ -36,11 +29,4 @@
 ## Introduction
 * 基于 create-react-app, 集成的功能有:
 
-> <code>react</code>, <code>react-router</code>, <code>mobx</code>
-
-> <code>lodash</code>, <code>moment</code>, <code>scss</code>
-
-> <code>flow</code>, <code>styled components</code>, <code>fetch</code>
-
-* 本项目是针对手机端的，并对字体自适应做好了处理(1rem = 100px)，且没有引入UI框架(推荐ant mobile)。
 
